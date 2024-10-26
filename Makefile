@@ -11,6 +11,9 @@ vet: fmt
 build:
 	go build -v ./cmd/...
 
+run:
+	go run -v ./cmd/dbk
+
 test:
 	go test ./...
 
