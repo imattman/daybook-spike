@@ -1,0 +1,8 @@
+# confirm basic usage output with bad flag
+! exec dbk --unknown-flag
+! stdout .
+
+# confirm some expected usage messaging
+stderr 'Usage of dbk:'
+stderr '-counts'
+stderr '-fields'
