@@ -1,4 +1,9 @@
-# confirm basic usage output with bad flag
+# as of Go 1.15 using `-h` results in exit status 0
+exec dbk -h
+! stdout .
+stderr 'Usage of dbk:'
+
+# confirm usage and non-zero exit with bad flag
 ! exec dbk --unknown-flag
 ! stdout .
 
