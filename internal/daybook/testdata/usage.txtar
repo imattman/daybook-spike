@@ -9,5 +9,5 @@ stderr 'Usage of dbk:'
 
 # confirm some expected usage messaging
 stderr 'Usage of dbk:'
-stderr '-counts'
+stderr '-c'
 stderr '-fields'

@@ -1,0 +1,46 @@
+stdin one-entry
+exec dbk -fields
+cmp stdout one-entry.expected
+
+stdin many-entries
+exec dbk -fields
+cmp stdout many-entries.expected
+
+stdin many-entries
+exec dbk -c -fields
+cmp stdout many-entries-counts.expected
+
+-- one-entry --
+---
+topic: go
+date: 2024-10-28
+instructor: Professor Squirrel
+
+-- many-entries --
+---
+topic: go
+date: 2024-10-29
+references:
+- http://some-useful-link.com
+
+---
+topic: java
+date: 2024-10-30
+instructor: ORA online
+references:
+- https://youtube.com/xyz
+
+-- one-entry.expected --
+date
+instructor
+topic
+-- many-entries.expected --
+date
+instructor
+references
+topic
+-- many-entries-counts.expected --
+  2 date
+  1 instructor
+  2 references
+  2 topic

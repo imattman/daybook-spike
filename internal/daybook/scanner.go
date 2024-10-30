@@ -2,7 +2,6 @@ package daybook
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"regexp"
 )
@@ -83,7 +82,8 @@ func (s *Scanner) Entries() ([]RawEntry, error) {
 	if done {
 		return nil, nil
 	}
-	fmt.Printf("preamble:\n%s\n", preamble)
+	_ = preamble
+	// fmt.Printf("preamble:\n%s\n", preamble)
 
 	entries := make([]RawEntry, 0)
 	for {

@@ -1,15 +1,17 @@
-package main
+package daybook_test
 
 import (
 	"os"
 	"testing"
+
+	"github.com/imattman/daybook-spike/internal/daybook"
 
 	"github.com/rogpeppe/go-internal/testscript"
 )
 
 func TestMain(m *testing.M) {
 	os.Exit(testscript.RunMain(m, map[string]func() int{
-		"dbk": Main,
+		"dbk": daybook.Main,
 	}))
 }
 
