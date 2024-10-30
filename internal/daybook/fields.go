@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 var listItemPat = regexp.MustCompile(`^\s*- `)
@@ -19,8 +21,21 @@ func (f headerField) String() string {
 	return fmt.Sprintf("%s: %d", f.name, f.count)
 }
 
-func fieldNames(e RawEntry) ([]string, error) {
+func fieldNamesYAML(e RawEntry) ([]string, error) {
+	m := make(map[string]any)
+	if err := yaml.Unmarshal(e.header, &m); err != nil {
+		return nil, fmt.Errorf("error parsing %q - %w", string(e.header), err)
+	}
 
+	fields := make([]string, 0, len(m))
+	for f := range m {
+		fields = append(fields, f)
+	}
+
+	return fields, nil
+}
+
+func fieldNames(e RawEntry) ([]string, error) {
 	scan := bufio.NewScanner(strings.NewReader(string(e.header)))
 	scan.Split(bufio.ScanLines)
 
@@ -49,7 +64,8 @@ func fieldNames(e RawEntry) ([]string, error) {
 func headerFields(entries []RawEntry) ([]headerField, error) {
 	fmap := make(map[string]int)
 	for _, e := range entries {
-		fnames, err := fieldNames(e)
+		// fnames, err := fieldNames(e)
+		fnames, err := fieldNamesYAML(e)
 		if err != nil {
 			return nil, err
 		}
