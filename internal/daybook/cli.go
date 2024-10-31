@@ -16,47 +16,95 @@ func Main() int {
 }
 
 func CLI(args []string) error {
-	var cfg appConfig
-	if err := cfg.fromArgs(args); err != nil {
+	var cli cliConfig
+	if err := cli.fromArgs(args); err != nil {
 		return err
 	}
 
-	scan := NewScanner(os.Stdin)
-	entries, err := scan.Entries()
+	rawEntries, err := cli.loadRawData()
 	if err != nil {
 		return err
 	}
 
-	if cfg.showFields {
-		fields, err := headerFields(entries)
-		if err != nil {
-			return err
+	switch {
+	case cli.flagFields:
+		return cli.processFields(rawEntries)
+	case cli.flagSummary:
+		return cli.processSummary(rawEntries)
+	case cli.flagOut:
+		return cli.processOut(rawEntries)
+	}
+
+	return nil
+}
+
+type cliConfig struct {
+	flagFields  bool
+	flagCounts  bool
+	flagSummary bool
+	flagOut     bool
+	args        []string
+}
+
+func (cli *cliConfig) fromArgs(args []string) error {
+	fset := flag.NewFlagSet(args[0], flag.ExitOnError)
+	fset.BoolVar(&cli.flagFields, "fields", false, "list fields")
+	fset.BoolVar(&cli.flagCounts, "c", false, "include counts")
+	fset.BoolVar(&cli.flagSummary, "summary", false, "show summary")
+	fset.BoolVar(&cli.flagOut, "out", false, "print in canonical form")
+
+	if err := fset.Parse(args[1:]); err != nil {
+		return err
+	}
+
+	cli.args = fset.Args()
+
+	return nil
+}
+
+func (cli *cliConfig) loadRawData() ([]RawEntry, error) {
+	scan := NewScanner(os.Stdin)
+	entries, err := scan.Entries()
+	if err != nil {
+		return nil, err
+	}
+
+	return entries, nil
+}
+
+func (cli *cliConfig) processFields(entries []RawEntry) error {
+	fields, err := headerFields(entries)
+	if err != nil {
+		return err
+	}
+	if cli.flagCounts {
+		for _, field := range fields {
+			fmt.Printf("%3d %s\n", field.count, field.name)
 		}
-		if cfg.showCounts {
-			for _, field := range fields {
-				fmt.Printf("%3d %s\n", field.count, field.name)
-			}
-		} else {
-			for _, field := range fields {
-				fmt.Printf("%s\n", field.name)
-			}
+	} else {
+		for _, field := range fields {
+			fmt.Printf("%s\n", field.name)
 		}
 	}
 
 	return nil
 }
 
-type appConfig struct {
-	showFields bool
-	showCounts bool
-	summary    bool
+func (cli *cliConfig) processSummary(entries []RawEntry) error {
+	return nil
 }
 
-func (c *appConfig) fromArgs(args []string) error {
-	fset := flag.NewFlagSet(args[0], flag.ExitOnError)
-	fset.BoolVar(&c.showFields, "fields", false, "list fields")
-	fset.BoolVar(&c.showCounts, "c", false, "include counts")
-	fset.BoolVar(&c.summary, "summary", false, "print summary")
+func (cli *cliConfig) processOut(entries []RawEntry) error {
+	for i, raw := range entries {
+		e, err := transform(raw)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("%s\n", e)
 
-	return fset.Parse(args[1:])
+		if i > 0 {
+			fmt.Printf("---\n")
+		}
+	}
+	return nil
 }
